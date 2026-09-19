@@ -4,6 +4,7 @@ A polished, dependency-free Snake game built with a single HTML file. It uses a 
 
 ## Features
 
+- Touch controls with swipe gestures or an on-screen directional pad
 - Keyboard controls with arrow keys or `WASD`
 - Neon-colored snake and food with high contrast
 - Score and persistent best-score tracking using `localStorage`
@@ -21,7 +22,7 @@ Open `index.html` directly in a modern web browser:
 index.html
 ```
 
-The game starts automatically. Use the arrow keys or `WASD` to move, and select **Play again** after a game over.
+The game starts automatically. On mobile, swipe across the board or use the directional pad below it. On desktop, use the arrow keys or `WASD`. Select **Play again** after a game over.
 
 ## Project structure
 

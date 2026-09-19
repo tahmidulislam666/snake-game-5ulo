@@ -193,6 +193,34 @@
 
     footer strong { color: var(--text); font-weight: 650; }
 
+    .touch-controls {
+      display: none;
+      grid-template-columns: repeat(3, 52px);
+      grid-template-rows: repeat(2, 46px);
+      justify-content: center;
+      gap: 7px;
+      margin: 18px auto 0;
+    }
+
+    .touch-controls button {
+      padding: 0;
+      color: var(--text);
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      box-shadow: none;
+      font-size: 20px;
+      line-height: 1;
+    }
+
+    .touch-controls button:nth-child(1) { grid-column: 2; }
+    .touch-controls button:nth-child(2) { grid-column: 1; grid-row: 2; }
+    .touch-controls button:nth-child(3) { grid-column: 2; grid-row: 2; }
+    .touch-controls button:nth-child(4) { grid-column: 3; grid-row: 2; }
+
+    @media (pointer: coarse) {
+      .touch-controls { display: grid; }
+    }
+
     @media (max-width: 520px) {
       body { padding: 16px; }
       header { align-items: start; flex-direction: column; gap: 14px; }
@@ -226,8 +254,15 @@
       </div>
     </section>
 
+    <div class="touch-controls" aria-label="Touch controls">
+      <button type="button" data-direction="up" aria-label="Move up">↑</button>
+      <button type="button" data-direction="left" aria-label="Move left">←</button>
+      <button type="button" data-direction="down" aria-label="Move down">↓</button>
+      <button type="button" data-direction="right" aria-label="Move right">→</button>
+    </div>
+
     <footer>
-      <span><strong>Move</strong> Arrow keys or WASD</span>
+      <span><strong>Move</strong> Swipe, tap controls, or keys</span>
       <span><strong>Speed</strong> increases every 5 apples</span>
     </footer>
   </main>
@@ -242,6 +277,7 @@
       const overlayTitle = document.getElementById("overlay-title");
       const overlayCopy = document.getElementById("overlay-copy");
       const restartButton = document.getElementById("restart");
+      const touchControls = document.querySelector(".touch-controls");
 
       const gridSize = 24;
       const tileSize = canvas.width / gridSize;
@@ -291,6 +327,16 @@
       function setDirection(next) {
         if (next.x + direction.x === 0 && next.y + direction.y === 0) return;
         nextDirection = next;
+      }
+
+      function directionFromName(name) {
+        const directions = {
+          up: { x: 0, y: -1 },
+          down: { x: 0, y: 1 },
+          left: { x: -1, y: 0 },
+          right: { x: 1, y: 0 }
+        };
+        return directions[name];
       }
 
       function endGame() {
@@ -398,6 +444,30 @@
           setDirection(next);
         }
       });
+
+      touchControls.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-direction]");
+        if (button) setDirection(directionFromName(button.dataset.direction));
+      });
+
+      let touchStart = null;
+      canvas.addEventListener("touchstart", (event) => {
+        const touch = event.changedTouches[0];
+        touchStart = { x: touch.clientX, y: touch.clientY };
+      }, { passive: true });
+
+      canvas.addEventListener("touchend", (event) => {
+        if (!touchStart) return;
+        const touch = event.changedTouches[0];
+        const deltaX = touch.clientX - touchStart.x;
+        const deltaY = touch.clientY - touchStart.y;
+        touchStart = null;
+        if (Math.max(Math.abs(deltaX), Math.abs(deltaY)) < 18) return;
+        const name = Math.abs(deltaX) > Math.abs(deltaY)
+          ? (deltaX > 0 ? "right" : "left")
+          : (deltaY > 0 ? "down" : "up");
+        setDirection(directionFromName(name));
+      }, { passive: true });
 
       restartButton.addEventListener("click", reset);
       reset();
